@@ -34,3 +34,10 @@ message ZioMsgTest3Map{
 message ZioMsgTestReply{
   string msg = 1;
 }
+
+
+import "google/protobuf/any.proto";
+message AnyMsg{
+  string type = 1;
+  google.protobuf.Any msg = 2;
+}

@@ -5,7 +5,7 @@ lazy val `zio-server-main` = project
   .enablePlugins(JavaAppPackaging)
   .settings(
     run / fork := true,
-    name := "zio-server-main",
+    name := "server-main",
     version := "0.1.0-SNAPSHOT",
     scalaVersion := scala3Version,
     Compile / PB.targets := Seq(
@@ -18,6 +18,8 @@ lazy val `zio-server-main` = project
         "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
         "com.typesafe" % "config" % "1.4.2",
         "org.scalameta" %% "munit" % "0.7.29" % Test,
+        "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0" % "protobuf",
+        "com.thesamet.scalapb.common-protos" %% "proto-google-common-protos-scalapb_0.11" % "2.9.6-0"
       )
     }
   )

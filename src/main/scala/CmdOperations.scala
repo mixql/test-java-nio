@@ -30,10 +30,10 @@ object CmdOperations {
     val isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
     try {
       if (isWindows && cmdWindows.nonEmpty) {
-        Process("cmd /c " + cmdWindows.get, path).run()
+        Process("cmd /c " + path.getAbsolutePath + "\\" + cmdWindows.get, path).run()
       } else {
         if cmdUnix.nonEmpty then
-          Process("bash -c " + cmdUnix.get, path).run()
+          Process("bash -c " + "\"" + path.getAbsolutePath + "/" + cmdUnix.get + "\"", path).run()
         else throw Exception("No cmd is provided")
       }
     } catch {

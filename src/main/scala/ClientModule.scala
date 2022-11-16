@@ -26,10 +26,11 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
   def sendMsg(msg: scalapb.GeneratedMessage): scalapb.GeneratedMessage = {
     if clientRemoteProcess == null then
       startModuleClient()
+      println("server: Clientmodule " + name + " waiting for init msg")
       SocketOperations.readMsgFromSocket(client) match {
         //To-do Should be ClientMsgStartedSuccesss
-        case ZioMsgTestReply(msg, _) => println(s"Got init msg from client $name: " + msg)
-        case _: Any => throw Exception("Got unknown init message from client " + name)
+        case ZioMsgTestReply(msg, _) => println(s"server: Got init msg from client $name: " + msg)
+        case _: Any => throw Exception("server: Got unknown init message from client " + name)
       }
     end if
 
@@ -37,9 +38,15 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
     SocketOperations.readMsgFromSocket(client)
   }
 
+  // def sendMsgAsync(msg: scalapb.GeneratedMessage): Future[scalapb.GeneratedMessage] = {
+  //   Future{
+  //     sendMsg(msg)
+  //   }
+  // }
+
   def initServerSocket() = {
     if server == null then
-      println(s"ClientModule $name. Initialising socket on server side for communicating with remote module")
+      println(s"server: ClientModule $name. Initialising socket on server side for communicating with remote module")
       server = ServerSocketChannel.open()
       socketAddr = new InetSocketAddress(port)
       server.socket.bind(socketAddr)
@@ -47,15 +54,15 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
 
   def startModuleClient() = {
     if server == null then initServerSocket()
-    println(s"trying to  start module $name at " + host + " and port at " + port +
+    println(s"server: trying to  start module $name at " + host + " and port at " + port +
       " in " + basePath.getAbsolutePath
     )
     clientRemoteProcess = CmdOperations.runCmdNoWait(
       Some(s"$name.bat --port $port --host $host"),
       Some(s"$name --port $port --host $host"), basePath)
-    println("waiting for connection")
+    println("server: waiting for connection")
     client = server.accept()
-    println(s"connected with ${client.getRemoteAddress.toString}")
+    println(s"server: connected with ${client.getRemoteAddress.toString}")
   }
 
   override def close() = {
@@ -65,7 +72,7 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
       client.close()
     }
     if (clientRemoteProcess.isAlive()) clientRemoteProcess.exitValue()
-    println("Remote client was shutdown")
+    println("server: Remote client was shutdown")
     if (modulesNum <= 0) server.close()
   }
 }

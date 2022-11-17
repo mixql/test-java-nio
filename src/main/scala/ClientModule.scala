@@ -66,6 +66,7 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
   }
 
   override def close() = {
+    println("Server: Executing close")
     modulesNum = modulesNum - 1
     if (client != null) {
       client.finishConnect()

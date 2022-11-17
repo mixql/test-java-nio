@@ -16,12 +16,13 @@ object SocketOperations {
     val bytes = new Array[Byte](4)
     val buffer = ByteBuffer.wrap(bytes)
     //Block and wait for answer
-    var res = -1
-    while (res < 0) {
-      buffer.clear
-      res = client.read(buffer)
-      println("client: readIntSocket: " + res)
-    }
+    //    var res = -1
+    //    while (res < 0) {
+    buffer.clear
+    val res = client.read(buffer)
+    println("client: readIntSocket: " + res)
+    if (res == -1) throw Exception("Client: Connection was closed")
+    //    }
     val returnValue: Int = convertByteArrayToInt(bytes)
     buffer.clear
     println("client: readIntSocket: got int " + returnValue)
@@ -33,11 +34,12 @@ object SocketOperations {
 
     //Block and wait for answer
     var res = -1
-    while (res < 0) {
-      buffer.clear
-      res = client.read(buffer)
-      println("client: readMsgFromSocket: " + res)
-    }
+    //    while (res < 0) {
+    buffer.clear
+    res = client.read(buffer)
+    println("client: readMsgFromSocket: " + res)
+    //    }
+    if (res == -1) throw Exception("Client: Connection was closed")
     val protoBufMsg: Array[Byte] = buffer.array()
     buffer.clear
     protoBufMsg
@@ -53,7 +55,7 @@ object SocketOperations {
   }
 
   def writeIntToSocket(client: SocketChannel, i: Int) = {
-    System.out.println("client: Sending int to client")
+    System.out.println("client: Sending int to server")
     import java.nio.ByteBuffer
     val bb = ByteBuffer.wrap(intToBytes(i))
     val res = client.write(bb)

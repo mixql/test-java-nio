@@ -18,7 +18,7 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
 
   var clientRemoteProcess: sys.process.Process = null
   var client: SocketChannel = null
-  modulesNum = modulesNum + 1
+
 
   import ClientModule.*
 
@@ -50,6 +50,7 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
       server = ServerSocketChannel.open()
       socketAddr = new InetSocketAddress(port)
       server.socket.bind(socketAddr)
+      modulesNum = modulesNum + 1
   }
 
   def startModuleClient() = {
@@ -69,11 +70,16 @@ class ClientModule(name: String, host: String, port: Int, basePath: File) extend
     println("Server: Executing close")
     modulesNum = modulesNum - 1
     if (client != null) {
+      println("Server: close client socket")
       client.finishConnect()
       client.close()
     }
+    if (modulesNum <= 0) {
+      println("Server: close server socket")
+      server.close()
+    }
     if (clientRemoteProcess.isAlive()) clientRemoteProcess.exitValue()
     println("server: Remote client was shutdown")
-    if (modulesNum <= 0) server.close()
+
   }
 }

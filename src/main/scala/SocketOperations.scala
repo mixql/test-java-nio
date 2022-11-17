@@ -3,69 +3,71 @@ import java.nio.ByteBuffer
 
 //TO_DO Use onebuffer, using flip and clear functions
 object SocketOperations {
-  def readMsgFromSocket(client: SocketChannel): scalapb.GeneratedMessage = {
-    val protoBufMsgLength = readIntFromSocket(client)
-    val protoBufMsg: Array[Byte] = readProtoBufFromSocket(client, protoBufMsgLength)
+  def readMsgFromSocket(server: SocketChannel): scalapb.GeneratedMessage = {
+    val protoBufMsgLength = readIntFromSocket(server)
+    val protoBufMsg: Array[Byte] = readProtoBufFromSocket(server, protoBufMsgLength)
     println("server: readMsgFromSocket: File Received. Converting array of bytes of size " +
       protoBufMsg.length + " to Protobuf msg")
     ProtoBufConverter.toProtobuf(protoBufMsg)
   }
 
-  def readIntFromSocket(client: SocketChannel): Int = {
+  def readIntFromSocket(server: SocketChannel): Int = {
     import java.nio.ByteBuffer
     val bytes = new Array[Byte](4)
     val buffer = ByteBuffer.wrap(bytes)
     //Block and wait for answer
-    var res = -1
-    while (res < 0) {
-      buffer.clear
-      res = client.read(buffer)
-      println("server: readIntSocket: " + res)
-    }
+    //    var res = -1
+    //    while (res < 0) {
+    buffer.clear
+    val res = server.read(buffer)
+    println("server: readIntSocket: " + res)
+    if (res == -1) throw Exception("server: Connection was closed")
+    //    }
     val returnValue: Int = convertByteArrayToInt(bytes)
     buffer.clear
     println("server: readIntSocket: got int " + returnValue)
     returnValue
   }
 
-  def readProtoBufFromSocket(client: SocketChannel, length: Int): Array[Byte] = {
+  def readProtoBufFromSocket(server: SocketChannel, length: Int): Array[Byte] = {
     val buffer = ByteBuffer.allocate(length)
 
     //Block and wait for answer
     var res = -1
-    while (res < 0) {
-      buffer.clear
-      res = client.read(buffer)
-      println("server: readMsgFromSocket: " + res)
-    }
+    //    while (res < 0) {
+    buffer.clear
+    res = server.read(buffer)
+    println("server: readMsgFromSocket: " + res)
+    //    }
+    if (res == -1) throw Exception("server: Connection was closed")
     val protoBufMsg: Array[Byte] = buffer.array()
     buffer.clear
     protoBufMsg
   }
 
-  def writeMsgToSocket(client: SocketChannel, msg: scalapb.GeneratedMessage) = {
+  def writeMsgToSocket(server: SocketChannel, msg: scalapb.GeneratedMessage) = {
     System.out.println(s"server: convert ${msg.getClass.getName} to array of bytes")
     var protoBufMsg: Array[Byte] = ProtoBufConverter.toArray(msg)
     println("\"server: \" writeMsgToSocket: size of protobufMsg: " + protoBufMsg.length)
-    writeIntToSocket(client, protoBufMsg.length)
-    writeProtoBufToSocket(client, protoBufMsg)
+    writeIntToSocket(server, protoBufMsg.length)
+    writeProtoBufToSocket(server, protoBufMsg)
     System.out.println(s"server: File ${msg.getClass.getName} was Sent")
   }
 
-  def writeIntToSocket(client: SocketChannel, i: Int) = {
+  def writeIntToSocket(server: SocketChannel, i: Int) = {
     System.out.println("server: Sending int to client")
     import java.nio.ByteBuffer
     val bb = ByteBuffer.wrap(intToBytes(i))
-    val res = client.write(bb)
+    val res = server.write(bb)
     System.out.println("server: " + res)
     bb.clear
     System.out.println("server: Int was Sent")
   }
 
-  def writeProtoBufToSocket(client: SocketChannel, protoBufMsg: Array[Byte]) = {
+  def writeProtoBufToSocket(server: SocketChannel, protoBufMsg: Array[Byte]) = {
     import java.nio.ByteBuffer
     val buffer = ByteBuffer.wrap(protoBufMsg)
-    val res = client.write(buffer)
+    val res = server.write(buffer)
     System.out.println("server: " + res)
     buffer.clear
   }
